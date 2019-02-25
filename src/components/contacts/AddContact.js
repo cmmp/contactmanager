@@ -1,7 +1,9 @@
 import React, { Component } from "react";
-import { Consumer } from "../../context";
 import TextInputGroup from "../layout/TextInputGroup";
-import axios from "axios";
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
+import { addContact } from "../../actions/contactActions";
+import uuid from "uuid/v4";
 
 class AddContact extends Component {
   state = {
@@ -15,7 +17,7 @@ class AddContact extends Component {
     this.setState({ [e.target.name]: e.target.value });
   };
 
-  onSubmit = async (dispatch, e) => {
+  onSubmit = e => {
     e.preventDefault();
     const { name, email, phone } = this.state;
 
@@ -36,17 +38,13 @@ class AddContact extends Component {
     }
 
     const newContact = {
+      id: uuid(),
       name,
       email,
       phone
     };
 
-    const res = await axios.post(
-      "https://jsonplaceholder.typicode.com/users",
-      newContact
-    );
-
-    dispatch({ type: "ADD_CONTACT", payload: res.data });
+    this.props.addContact(newContact);
 
     // clear state (so the form is not left with the submitted data)
     this.setState({
@@ -63,52 +61,52 @@ class AddContact extends Component {
     const { name, email, phone, errors } = this.state;
 
     return (
-      <Consumer>
-        {value => {
-          const { dispatch } = value;
-          return (
-            <div className="card mb-3">
-              <div className="card-header">Add Contact</div>
-              <div className="card-body">
-                <form onSubmit={this.onSubmit.bind(this, dispatch)}>
-                  <TextInputGroup
-                    label="Name"
-                    name="name"
-                    placeholder="Enter name"
-                    value={name}
-                    onChange={this.onChange}
-                    error={errors.name}
-                  />
-                  <TextInputGroup
-                    label="Email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter email"
-                    value={email}
-                    onChange={this.onChange}
-                    error={errors.email}
-                  />
-                  <TextInputGroup
-                    label="Phone"
-                    name="phone"
-                    placeholder="Enter phone"
-                    value={phone}
-                    onChange={this.onChange}
-                    error={errors.phone}
-                  />
-                  <input
-                    type="submit"
-                    value="Add Contact"
-                    className="btn btn-danger btn-block"
-                  />
-                </form>
-              </div>
-            </div>
-          );
-        }}
-      </Consumer>
+      <div className="card mb-3">
+        <div className="card-header">Add Contact</div>
+        <div className="card-body">
+          <form onSubmit={this.onSubmit.bind(this)}>
+            <TextInputGroup
+              label="Name"
+              name="name"
+              placeholder="Enter name"
+              value={name}
+              onChange={this.onChange}
+              error={errors.name}
+            />
+            <TextInputGroup
+              label="Email"
+              name="email"
+              type="email"
+              placeholder="Enter email"
+              value={email}
+              onChange={this.onChange}
+              error={errors.email}
+            />
+            <TextInputGroup
+              label="Phone"
+              name="phone"
+              placeholder="Enter phone"
+              value={phone}
+              onChange={this.onChange}
+              error={errors.phone}
+            />
+            <input
+              type="submit"
+              value="Add Contact"
+              className="btn btn-danger btn-block"
+            />
+          </form>
+        </div>
+      </div>
     );
   }
 }
 
-export default AddContact;
+AddContact.propTypes = {
+  addContact: PropTypes.func.isRequired
+};
+
+export default connect(
+  null,
+  { addContact }
+)(AddContact);
